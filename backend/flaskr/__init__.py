@@ -37,7 +37,6 @@ def create_app(test_config=None):
     #         If you decide to change the number of books per page,
     #         update the frontend to handle additional books in the styling and pagination
     #         Response body keys: 'success', 'books' and 'total_books'
-    # TEST: When completed, the webpage will display books including title, author, and rating shown as stars
     @app.route('/books')
     def get_books():
         # Set the default page the user will receive first
