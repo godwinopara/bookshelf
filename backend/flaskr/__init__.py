@@ -91,16 +91,17 @@ def create_app(test_config=None):
 
     @app.route('/books/<int:book_id>', methods=["DELETE"])
     def delete_book(book_id):
-        books = Book.query.filter(Book.id == book_id).one_or_once()
-        if books is None:
-            abort(404)
+        book = Book.query.filter(Book.id == book_id).one_or_once()
+        if book is None:
+            abort(422)
 
-        books.delete()
+        book.delete()
 
+        books = Book.query.order_by()
         formated_book = [book.format() for book in books]
 
         return jsonify({
-            "success": True
+            "success": True,
             "total_books": len(formated_book)
         })
 
@@ -116,12 +117,15 @@ def create_app(test_config=None):
         author = body.get('author', None)
         rating = body.get('rating', None)
 
-        new_book = Book(title=title,
-                        author=author,
-                        rating=rating
-                        )
+        try:
+            new_book = Book(title=title,
+                            author=author,
+                            rating=rating
+                            )
 
-        new_book.insert()
+            new_book.insert()
+        except:
+            abort(422)
 
         return jsonify({
             "success": True,
