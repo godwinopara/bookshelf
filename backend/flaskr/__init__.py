@@ -91,14 +91,17 @@ def create_app(test_config=None):
 
     @app.route('/books/<int:book_id>', methods=["DELETE"])
     def delete_book(book_id):
-        book = Book.query.filter(Book.id == book_id).one_or_once()
-        if book is None:
+        books = Book.query.filter(Book.id == book_id).one_or_once()
+        if books is None:
             abort(404)
 
-        book.delete()
+        books.delete()
+
+        formated_book = [book.format() for book in books]
 
         return jsonify({
             "success": True
+            "total_books": len(formated_book)
         })
 
     # @TODO: Write a route that create a new book.
@@ -121,6 +124,7 @@ def create_app(test_config=None):
         new_book.insert()
 
         return jsonify({
-            "success": True
+            "success": True,
+            "created": new_book.id
         })
     return app
