@@ -9,6 +9,17 @@ from models import setup_db, Book
 
 BOOKS_PER_SHELF = 8
 
+
+def paginated_books(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * BOOKS_PER_SHELF
+    end = start + BOOKS_PER_SHELF
+
+    books = [book.format() for book in selection]
+    current_books = books[start:end]
+
+    return current_books
+
 # @TODO: General Instructions
 #   - As you're creating endpoints, define them and then search for 'TODO' within the frontend to update the endpoints there.
 #     If you do not update the endpoints, the lab will not work - of no fault of your API code!
@@ -41,23 +52,17 @@ def create_app(test_config=None):
     @app.route('/books')
     def get_books():
         # Set the default page the user will receive first
-        page = request.args.get('page', 1, type=int)
-        # pagination
-        start = (page - 1) * 8
-        end = start + 8
-        # Get all books
-        books = Book.query.all()
-        # Format each book in a dictionary
-        formated_books = [book.format() for book in books]
+        selection = Book.query.order_by(Book.id).all()
+        current_books = paginated_books(request, selection)
 
-        if(len(formated_books[start:end]) == 0):
+        if len(current_books) == 0:
             abort(404)
-
-        return jsonify({
-            "success": True,
-            "books": formated_books[start:end],
-            "total_books": len(formated_books)
-        })
+        else:
+            return jsonify({
+                "success": True,
+                "books": current_books,
+                "total_books": len(Book.query.all())
+            })
 
     # @TODO: Write a route that will update a single book's rating.
     #         It should only be able to update the rating, not the entire representation
@@ -71,7 +76,7 @@ def create_app(test_config=None):
         try:
             body = request.get_json()
             if book is None:
-                abort(404)
+                abort(400)
 
             if 'rating' in body:
                 book.rating = int(body['rating'])
@@ -83,7 +88,7 @@ def create_app(test_config=None):
                 "id": book.id
             })
         except:
-            abort(404)
+            abort(400)
 
     # @TODO: Write a route that will delete a single book.
     #        Response body keys: 'success', 'deleted'(id of deleted book), 'books' and 'total_books'
@@ -93,8 +98,9 @@ def create_app(test_config=None):
 
     @app.route('/books/<int:book_id>', methods=["DELETE"])
     def delete_book(book_id):
-        book = Book.query.filter(Book.id == book_id).one_or_once()
-        if book is None:
+        book = Book.query.get(book_id)
+
+        if len(book) == 0:
             abort(404)
 
         book.delete()
@@ -120,31 +126,44 @@ def create_app(test_config=None):
         title = body.get('title', None)
         author = body.get('author', None)
         rating = body.get('rating', None)
+        search = body.get('search')
 
         try:
-            new_book = Book(title=title, author=author, rating=rating)
+            if search:
+                selection = Book.query.order_by(Book.id).filter(
+                    Book.title.ilike(f'%{search}%'))
 
-            new_book.insert()
+                current_books = paginated_books(request, selection)
 
-            books = Book.query.order_by(Book.id).all()
-            formated_books = [book.format() for book in books]
+                return jsonify({
+                    "success": True,
+                    "books": current_books,
+                    "total_books": len(selection.all())
+                })
+            else:
+                new_book = Book(title=title, author=author, rating=rating)
+
+                new_book.insert()
+
+                books = Book.query.order_by(Book.id).all()
+                formated_books = [book.format() for book in books]
+
+                return jsonify({
+                    "success": True,
+                    "created": new_book.id,
+                    "books": formated_books,
+                    "total_books": len(formated_books)
+                })
 
         except:
-            abort(422)
-
-        return jsonify({
-            "success": True,
-            "created": new_book.id,
-            "books": formated_books,
-            "total_books": len(formated_books)
-        })
+            abort(405)
 
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
             "success": False,
             "error": 404,
-            "message": "resource Not Found"
+            "message": "resource not found"
         })
 
     @app.errorhandler(422)
