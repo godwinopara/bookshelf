@@ -1,3 +1,4 @@
+import json
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -152,6 +153,14 @@ def create_app(test_config=None):
             "success": False,
             "error": 422,
             "message": "unprocessable"
+        })
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "Bad Request"
         })
 
     return app
