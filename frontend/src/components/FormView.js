@@ -1,33 +1,33 @@
-import React, { Component } from 'react';
-import $ from 'jquery';
+import React, { Component } from "react";
+import $ from "jquery";
 
-import '../stylesheets/FormView.css';
+import "../stylesheets/FormView.css";
 
 class FormView extends Component {
-  constructor(props){
+  constructor(props) {
     super();
     this.state = {
       title: "",
       author: "",
       rating: 1,
-      search: '',
-    }
+      search: "",
+    };
   }
 
   submitBook = (event) => {
     event.preventDefault();
     $.ajax({
-      url: '/books', //TODO: update request URL
+      url: "/books", //TODO: update request URL
       type: "POST",
-      dataType: 'json',
-      contentType: 'application/json',
+      dataType: "json",
+      contentType: "application/json",
       data: JSON.stringify({
         title: this.state.title,
         author: this.state.author,
         rating: this.state.rating,
       }),
       xhrFields: {
-        withCredentials: true
+        withCredentials: true,
       },
       crossDomain: true,
       success: (result) => {
@@ -35,28 +35,28 @@ class FormView extends Component {
         return;
       },
       error: (error) => {
-        alert('Unable to add book. Please try your request again')
+        alert("Unable to add book. Please try your request again");
         return;
-      }
-    })
-  }
+      },
+    });
+  };
 
   handleSearch = (event) => {
     event.preventDefault();
     this.props.searchBooks(this.state.search);
-  }
+  };
 
   handleChange = (event) => {
-    this.setState({[event.target.name]: event.target.value})
-  }
+    this.setState({ [event.target.name]: event.target.value });
+  };
 
   render() {
     return (
       <div id="form-view">
-        <div className="search" style={{'display': 'None'}}>
+        <div className="search" style={{ display: "block" }}>
           <h2>Search</h2>
           <form className="FormView" id="search-form" onSubmit={this.handleSearch}>
-            <input type="text" name="search" onChange={this.handleChange}/>
+            <input type="text" name="search" onChange={this.handleChange} />
             <input type="submit" className="button" value="Submit" />
           </form>
         </div>
@@ -64,11 +64,11 @@ class FormView extends Component {
         <form className="FormView" id="add-book-form" onSubmit={this.submitBook}>
           <label>
             Title
-            <input type="text" name="title" onChange={this.handleChange}/>
+            <input type="text" name="title" onChange={this.handleChange} />
           </label>
           <label>
             Author
-            <input type="text" name="author" onChange={this.handleChange}/>
+            <input type="text" name="author" onChange={this.handleChange} />
           </label>
           <label>
             Rating
@@ -88,3 +88,4 @@ class FormView extends Component {
 }
 
 export default FormView;
+
