@@ -18,11 +18,18 @@ class Bookshelf(unittest.TestCase):
         # Executed after each test
         pass
 
-    def test_given_behavior(self):
+    def test_get_books(self):
         # Test ____________________
         res = self.client().get('/books')
+        data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
+        self.assetEqual(data['success'], True)
+        self.assertEqual(data['total_books'])
+        self.assertEqual(data['books'])
+
+    def test_update_book(self):
+        pass
 
 
 if __name__ == "__main__":
