@@ -79,6 +79,7 @@ def create_app(test_config=None):
 
             return jsonify({
                 "success": True,
+                "id": book.id
             })
         except:
             abort(404)
@@ -93,15 +94,17 @@ def create_app(test_config=None):
     def delete_book(book_id):
         book = Book.query.filter(Book.id == book_id).one_or_once()
         if book is None:
-            abort(422)
+            abort(404)
 
         book.delete()
 
-        books = Book.query.order_by()
+        books = Book.query.all()
         formated_book = [book.format() for book in books]
 
         return jsonify({
             "success": True,
+            "total_books": len(formated_book),
+            "books": formated_book,
             "total_books": len(formated_book)
         })
 
@@ -118,17 +121,20 @@ def create_app(test_config=None):
         rating = body.get('rating', None)
 
         try:
-            new_book = Book(title=title,
-                            author=author,
-                            rating=rating
-                            )
+            new_book = Book(title=title, author=author, rating=rating)
 
             new_book.insert()
+
+            books = Book.query.order_by(Book.id).all()
+            formated_books = [book.format() for book in books]
+
         except:
             abort(422)
 
         return jsonify({
             "success": True,
-            "created": new_book.id
+            "created": new_book.id,
+            "books": formated_books,
+            "total_books": len(formated_books)
         })
     return app
