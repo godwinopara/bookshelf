@@ -137,4 +137,13 @@ def create_app(test_config=None):
             "books": formated_books,
             "total_books": len(formated_books)
         })
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource Not Found"
+        })
+
     return app
