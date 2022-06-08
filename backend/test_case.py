@@ -25,11 +25,18 @@ class Bookshelf(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assetEqual(data['success'], True)
-        self.assertEqual(data['total_books'])
-        self.assertEqual(data['books'])
+        self.assertTrue(data['total_books'])
+        self.assertTrue(data['books'])
 
-    def test_update_book(self):
-        pass
+    def test_404_sent_requesting_beyond_valid_page(self):
+        res = self.client().get('/books?page=1000', json={'rating': 1})
+        data = json.loads(res.data)
+
+        self.assetEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['total_books'])
+        self.assertTrue(data['total_books'])
+        self.assertTrue(len(data['books']))
 
 
 if __name__ == "__main__":
